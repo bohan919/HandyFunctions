@@ -14,10 +14,9 @@ from pypardiso import spsolve
 
 class TOStruc:
     """
-    This is a parent class which is meant to feed into both TPMS and Truss 
-    generation classes (below). It will flesh out the main structure of the 
-    lattice generation classes, with the methods to be completed with speci-
-    fics in the child classes. 
+    This is the class that takes in a given 2D structure in .png format and
+    obtains the basic performance information of the given structure (e.g 
+    volumn fraction (vf), compliance, strain energy distribution etc)
     
     :PATH : where the .png files are stored
     :type : string
@@ -36,6 +35,10 @@ class TOStruc:
 
         input = cv2.imread(PATH, 0)
         self.struc = 1-input/255
+
+        nely, nelx = input.shape
+        self.nely = nely
+        self.nelx = nelx
         
         if Loading == 1:
             self.Loading = Loading

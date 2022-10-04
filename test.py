@@ -9,5 +9,6 @@ compliance = test1.compliance()
 ce = test1.strainEnergy()
 vf = test1.vf()
 
-print(compliance)
+print(test1.nelx)
+print(test1.nely)
 print(vf)
