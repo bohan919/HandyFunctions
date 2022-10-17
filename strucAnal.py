@@ -21,6 +21,11 @@ class TOStruc:
     :PATH : where the .png files are stored
     :type : string
 
+    :thres : threshold filter
+    :type : int
+                0 - off (DEFAULT)
+                1 - on (<0.5 to 0; >=0.5 to 1)
+
     :Loading: Loading type
                 1 - Point Load Downwards
                 2 - 
@@ -31,11 +36,14 @@ class TOStruc:
                 2 - 
     
     """
-    def __init__(self, PATH, Loading=1, BC=1):
+    def __init__(self, PATH, thres=0, Loading=1, BC=1):
 
         input = cv2.imread(PATH, 0)
-        self.struc = 1-input/255
-
+        if thres == 0:
+            self.struc = 1-input/255
+        if thres == 1:
+            xPhys = 1-input/255
+            self.struc = np.where(xPhys<0.5, 0, 1)
         nely, nelx = input.shape
         self.nely = nely
         self.nelx = nelx
@@ -46,7 +54,7 @@ class TOStruc:
         if BC == 1:
             self.BC = BC
             print('BC: Half-MBB')
-        
+
 
     def compliance(self):
         _, c = self.FEA(self.Loading, self.BC)
