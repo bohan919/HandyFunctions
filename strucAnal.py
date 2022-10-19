@@ -6,6 +6,7 @@ STRUCTURE
 import numpy as np
 import numpy.matlib
 import cv2
+import AMFilter
 from scipy.sparse import csr_matrix
 from pypardiso import spsolve
 
@@ -25,6 +26,7 @@ class TOStruc:
     :type : int
                 0 - off (DEFAULT)
                 1 - on (<0.5 to 0; >=0.5 to 1)
+                2 - on (0 to 0; >0 to 1)
 
     :Loading: Loading type
                 1 - Point Load Downwards
@@ -44,6 +46,9 @@ class TOStruc:
         if thres == 1:
             xPhys = 1-input/255
             self.struc = np.where(xPhys<0.5, 0, 1)
+        if thres == 2:
+            xPhys = 1-input/255
+            self.struc = np.where(xPhys<0.1, 0, 1)
         nely, nelx = input.shape
         self.nely = nely
         self.nelx = nelx
@@ -69,8 +74,12 @@ class TOStruc:
         nely, nelx = xPhys.shape
         vf = np.sum(np.sum(xPhys))/(nely*nelx)
         return vf
-        
 
+    def AMfilter(self):
+        xPhys = self.struc
+        xPrint = AMFilter.AMFilter(xPhys, 'S')
+        return xPrint
+        
     def FEA(self, Loading, BC):
         xPhys = self.struc
         nely, nelx = xPhys.shape

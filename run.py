@@ -1,22 +1,33 @@
 # TEST FILE FOR strucAnal.py
 import os
 from strucAnal import TOStruc
+import numpy as np
 
-folder = './combinedProcessed/'
+folder = './ARProcessed/'
 # files = os.listdir(folder)
 files = [file for file in os.listdir(folder) if file.endswith('.png')]
-output = open(folder+'outputThres.txt', 'a')
+output = open(folder+'unprintableElements.txt', 'a')
 
 for file in files:
 
     PATH = folder+file
-    test1 = TOStruc(PATH,1)
+    BinaryedxPhys = TOStruc(PATH,2)
+    nely = BinaryedxPhys.nely
+    nelx = BinaryedxPhys.nelx
 
-    compliance = test1.compliance()
-    ce = test1.strainEnergy()
-    vf = test1.vf()
+    xPrint, _ = BinaryedxPhys.AMfilter()
+    xPrintBinary = np.where(xPrint<0.1, 0, 1)
 
-    output.write("%s \t %s \t %s \n" %(file,vf, compliance))
+    initial = np.sum(np.sum(BinaryedxPhys.struc))
+    printable = np.sum(np.sum(xPrintBinary))
+
+    nUnprintable = initial - printable 
+
+    # compliance = test1.compliance()
+    # ce = test1.strainEnergy()
+    # vf = test1.vf()
+
+    output.write("%s \t nelx - %s nely - %s \t nUnprintable: %s \n" %(file, nelx, nely, nUnprintable))
 
 ##### TESTS
 # testPath = 'test1.png'
