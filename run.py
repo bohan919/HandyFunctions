@@ -1,33 +1,50 @@
-# TEST FILE FOR strucAnal.py
+# execute the functions for pre-, post-processing and structural analysis
 import os
 from strucAnal import TOStruc
+import postProcess
 import numpy as np
+import time
+import cv2
 
-folder = './ARProcessed/'
+folder = './processed/'
 # files = os.listdir(folder)
 files = [file for file in os.listdir(folder) if file.endswith('.png')]
-output = open(folder+'unprintableElements.txt', 'a')
+output = open(folder+'iterationsAR_MMA.txt', 'a')
+
+# test = np.load(folder+'52_26_0.42_GAN.png.npy')
 
 for file in files:
 
     PATH = folder+file
-    BinaryedxPhys = TOStruc(PATH,2)
-    nely = BinaryedxPhys.nely
-    nelx = BinaryedxPhys.nelx
+    itemsList = file.split('_')[:-1]
+    fileNAME = file.split('.')[0:-1]
+    vf = float(itemsList[2])
+    nelxOri = int(itemsList[0])
+    nelyOri = int(itemsList[1])
 
-    xPrint, _ = BinaryedxPhys.AMfilter()
-    xPrintBinary = np.where(xPrint<0.1, 0, 1)
+    xPhysInput = TOStruc(PATH,0)
+    resxPhys = cv2.resize(xPhysInput.struc, dsize=(nelxOri, nelyOri), interpolation = cv2.INTER_NEAREST)
+    nely = xPhysInput.nely
+    nelx = xPhysInput.nelx
 
-    initial = np.sum(np.sum(BinaryedxPhys.struc))
-    printable = np.sum(np.sum(xPrintBinary))
+    penal = 3  # consistent with setting in data generation
+    rmin = 2   # consistent with setting in data generation
 
-    nUnprintable = initial - printable 
+    start_time = time.time()
+    xPrint, loop = postProcess.main(resxPhys, nelxOri, nelyOri,vf,penal,rmin, 2, 1)
+    duration = time.time()-start_time
 
-    # compliance = test1.compliance()
-    # ce = test1.strainEnergy()
-    # vf = test1.vf()
+    #### determine no. of unprintable elements
+    # BinaryedxPhys = TOStruc(PATH,2)
+    # xPrint, _ = BinaryedxPhys.AMfilter()
+    # xPrintBinary = np.where(xPrint<0.1, 0, 1)
 
-    output.write("%s \t nelx - %s nely - %s \t nUnprintable: %s \n" %(file, nelx, nely, nUnprintable))
+    # initial = np.sum(np.sum(BinaryedxPhys.struc))
+    # printable = np.sum(np.sum(xPrintBinary))
+    # nUnprintable = initial - printable 
+
+    output.write("%s \t  %s s \t %s  \n" %(file, duration, loop))
+    np.save(folder+file+'.npy', xPrint)
 
 ##### TESTS
 # testPath = 'test1.png'
